@@ -1,0 +1,70 @@
+__author__ = 'marvinler'
+
+import os
+import h5py
+import numpy as np
+import torch
+import torch.utils.data as data_utils
+import torchvision.transforms as transforms
+
+
+class PatchCamelyon(data_utils.Dataset):
+
+    def __init__(self, path, mode='train', n_iters=None, augment=False):
+        super().__init__()
+
+        self.n_iters = n_iters
+
+        assert mode in ['train', 'valid', 'test']
+        base_name = "camelyonpatch_level_2_split_{}_{}.h5"
+
+        print('\n')
+        print("# " * 50)
+        print('Loading {} dataset...'.format(mode))
+
+        # Open the files
+        h5X = h5py.File(os.path.join(path, base_name.format(mode, 'x')), 'r')
+        h5y = h5py.File(os.path.join(path, base_name.format(mode, 'y')), 'r')
+
+        # Read into numpy array
+        self.X = np.array(h5X.get('x'))
+        self.y = np.array(h5y.get('y')).reshape(-1, 1).astype(np.float32)
+
+        print('Loaded {} dataset with {} samples'.format(mode, len(self.X)))
+        print("# " * 50)
+
+        if augment:
+            self.transform = transforms.Compose([transforms.ToPILImage(),
+                                                 transforms.ColorJitter(brightness=.5, saturation=.25,
+                                                                        hue=.1, contrast=.5),
+                                                 transforms.RandomAffine(10, (0.05, 0.05), fillcolor=255),
+                                                 transforms.RandomHorizontalFlip(.5),
+                                                 transforms.RandomVerticalFlip(.5),
+                                                 transforms.ToTensor(),
+                                                 transforms.Normalize([0.6716241, 0.48636872, 0.60884315],
+                                                                      [0.27210504, 0.31001145, 0.2918652])])
+        else:
+            self.transform = transforms.Compose([transforms.ToPILImage(),
+                                                 transforms.ToTensor(),
+                                                 transforms.Normalize([0.6716241, 0.48636872, 0.60884315],
+                                                                      [0.27210504, 0.31001145, 0.2918652])])
+
+    def __getitem__(self, item):
+        images = self.X[item]
+        images = self.transform(images)
+        labels = self.y[item]
+        return images, labels
+        # idx = item % self.__len__()
+        # _slice = slice(idx*self.batch_size, (idx + 1) * self.batch_size)
+        # images = self._transform(self.X[_slice])
+        # labels = torch.tensor(self.y[_slice].astype(np.float32)).view(-1, 1)
+        # return {'images': images, 'labels': labels}
+
+    def _transform(self, images):
+        tensors = []
+        for image in images:
+            tensors.append(self.transform(image))
+        return torch.stack(tensors)
+
+    def __len__(self):
+        return len(self.y)
