@@ -2,7 +2,7 @@ import torch
 from torch import nn as nn
 from torch.nn import functional as F
 
-from code.rot_inv_cnn.layers import PolarConvNd
+from layers import PolarConvNd
 
 
 class Baseline(nn.Module):

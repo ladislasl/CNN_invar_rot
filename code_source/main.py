@@ -9,13 +9,13 @@ import numpy as np
 
 from torch.utils.tensorboard import SummaryWriter
 
-import code.rot_inv_cnn.get_data as get_data
-from code.rot_inv_cnn.pcam_dataset import PatchCamelyon
+import get_data as get_data
+from pcam_dataset import PatchCamelyon
 from torch.utils.data import DataLoader
 
-from code.rot_inv_cnn.models import Baseline, PolarBaseline, BaselineSmall
-import code.rot_inv_cnn.custom_vgg as vgg
-import code.rot_inv_cnn.custom_resnet as resnet
+from models import Baseline, PolarBaseline, BaselineSmall
+import custom_vgg as vgg
+import custom_resnet as resnet
 
 from time import gmtime, strftime
 
@@ -121,7 +121,7 @@ def train(args, model, loss_fct, train_loader, optimizer, epoch, writer):
     model.train()
     losses = []
     for batch_idx, (data, target) in enumerate(train_loader):
-        data, target = data.cuda(), target.cuda()
+        data, target = data, target
         optimizer.zero_grad()
         output = model(data)
         loss = loss_fct(output, target)
@@ -219,12 +219,14 @@ def main(args, reg=None):
                                            args.model_type, args.baseline, args.filter_width,
                                            args.batch_size, args.lr, args.reg])))
     run_filepath = os.path.join(writer_folder, run_filename)
-    writer = SummaryWriter(run_filepath)
+    print("FILLLLLLLLLENAMMMMMMMMMMMME",run_filepath)
+    
+    writer = SummaryWriter()
     print('Writer file', os.path.abspath(run_filepath))
-    if not os.path.exists(run_filepath):
-        os.makedirs(run_filepath)
-    with open(os.path.join(run_filepath, 'config'), 'w') as f:
-        f.write(str(args))
+    #if not os.path.exists(run_filepath):
+        #os.makedirs(run_filepath)
+    #with open(os.path.join(run_filepath, 'config'), 'w') as f:
+        #f.write(str(args))
 
     # optimizer = optim.SGD(model.parameters(), lr=args.lr, weight_decay=args.reg[0] if reg is None else reg)
     optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.reg[0] if reg is None else reg)
@@ -233,9 +235,9 @@ def main(args, reg=None):
     best_saved_model_sofar = None
     val_losses = []
     # scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
-    scheduler = ReduceLROnPlateau(optimizer, 'min', args.gamma, args.lr_timestep, True, threshold=1e-3)
+    scheduler = ReduceLROnPlateau(optimizer, 'min', args.gamma, args.lr_timestep, threshold=1**(-3))
     for epoch in range(1, args.epochs + 1):
-        train_loss = train(args, model, loss_fct, train_loader, optimizer, epoch, writer)
+        train_loss = train(args, model, loss_fct, train_loader, optimizer, writer, epoch)
         val_loss, save_path = test(args, model, loss_fct, val_loader, epoch, writer, best_loss_sofar,
                                    len(train_loader), train_loss, is_val=True)
         if val_loss < best_loss_sofar:

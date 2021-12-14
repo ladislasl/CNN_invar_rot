@@ -1,8 +1,13 @@
 __author__ = 'marvinler'
 
 import torch.nn as nn
-from torchvision.models.utils import load_state_dict_from_url
-from code.rot_inv_cnn.layers import PolarConvNd
+import torch
+import torch.nn.functional as F
+import torch.nn.utils
+import numpy as np
+
+from torch.hub import load_state_dict_from_url
+from layers import PolarConvNd
 
 
 __all__ = [
