@@ -13,7 +13,7 @@ from torch.nn.modules.utils import _single, _pair, _triple
 
 # @weak_module
 class PolarConvNd(torch.nn.modules.conv._ConvNd):
-    def __init__(self, in_channels, out_channels, kernel_size, dimensions=2, stride=1,
+    def __init__(self, in_channels=1, out_channels=1, kernel_size=3, dimensions=2, stride=1,
                  padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'):
         self.init_kernel_size = kernel_size
         assert kernel_size % 2 == 1, 'expected kernel size to be odd, found %d' % kernel_size
@@ -129,16 +129,22 @@ class PolarConvNd(torch.nn.modules.conv._ConvNd):
         # weight = self.weight[..., 0].view(*self.weight.size()[:-1], 1, 1) * self.a_ + \
         #          self.weight[..., 1].view(*self.weight.size()[:-1], 1, 1) * self.b_ + \
         #          self.weight[..., 2].view(*self.weight.size()[:-1], 1, 1) * self.c_
-
+        print(input.size())
+        
+        input = torch.cat((input,input,input),1)
+        print(input.size())
         weight_size = self.weight.shape
         weight = torch.mm(self.weight.view(np.prod(weight_size[:-1]), weight_size[-1]), self.base_vectors) \
             .view(*weight_size[:-1], *self.true_base_vectors_shape[1:])
         return self.reconstructed_conv_op(input, weight, self.bias, self.reconstructed_stride,
                                           self.reconstructed_padding, self.reconstructed_dilation, self.groups)
 
+
+    #torch.repeat_interleave(input, 1, dim=1)
     # def cuda(self, device=None):
     #     self.base_vectors = self.base_vectors.cuda(device)
     #     super(PolarConvNd, self).cuda(device)
+
 
     def __repr__(self):
         return ('PolarConv%dd' % self.init_dimensions) + '(' + self.extra_repr() + ')'
