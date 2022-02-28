@@ -22,7 +22,7 @@ class PolarConvNd(torch.nn.modules.conv._ConvNd):
         self.base_vectors = torch.from_numpy(self.build_base_vectors()).float()
         self.true_base_vectors_shape = self.base_vectors.shape
         self.base_vectors = self.base_vectors.view(self.true_base_vectors_shape[0],
-                                                   np.prod(self.true_base_vectors_shape[1:]))
+                                                   np.prod(self.true_base_vectors_shape[1:]).astype(int))
 
         inferred_kernel_size = self.true_base_vectors_shape[0]
         _kernel_size = _single(inferred_kernel_size)
@@ -129,10 +129,12 @@ class PolarConvNd(torch.nn.modules.conv._ConvNd):
         # weight = self.weight[..., 0].view(*self.weight.size()[:-1], 1, 1) * self.a_ + \
         #          self.weight[..., 1].view(*self.weight.size()[:-1], 1, 1) * self.b_ + \
         #          self.weight[..., 2].view(*self.weight.size()[:-1], 1, 1) * self.c_
-        print(input.size())
-        
-        input = torch.cat((input,input,input),1)
-        print(input.size())
+
+        #print(input.size())
+        #input = torch.cat((input,input,input),1)
+        #print(input.size())
+
+
         weight_size = self.weight.shape
         weight = torch.mm(self.weight.view(np.prod(weight_size[:-1]), weight_size[-1]), self.base_vectors) \
             .view(*weight_size[:-1], *self.true_base_vectors_shape[1:])
