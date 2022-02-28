@@ -18,3 +18,13 @@ Secondary Subject Areas: Medical, biological, and cell microscopy Vision applica
 2- Quelques articles & presentations
 
 A- https://hal.archives-ouvertes.fr/hal-02022802/document B- https://arxiv.org/pdf/1604.06720.pdf C- https://ieeexplore.ieee.org/abstract/document/8462057 D- https://arxiv.org/pdf/2004.03037.pdf
+
+A faire :
+
+- créer un notebook indépendant juste pour les cercles concentriques
+- résultats pour la méthode cercles concentriques
+- trois notebooks qui tournent différents - original de marvin - cercle concentriques - steerable filters
+
+perso:
+- faire marcher wsl
+- faire une copie d'un collab indépendante 
